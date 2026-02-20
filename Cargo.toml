@@ -29,6 +29,9 @@ url = "2.5"
 which = "8.0"
 zip = { version = "6.0.0", optional = true }
 
+clap = { version = "4", features = ["derive"] }
+rustyline = "15"
+
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55.0"
 
@@ -46,6 +49,14 @@ auto_generate_cdp = "0.4.6"
 [lib]
 name = "headless_chrome"
 path = "src/lib.rs"
+
+[[bin]]
+name = "puppeteer"
+path = "src/bin/puppeteer.rs"
+
+[[bin]]
+name = "puppeteer-script"
+path = "src/bin/puppeteer_script.rs"
 
 [features]
 default = ["offline"]

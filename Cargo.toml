@@ -58,6 +58,10 @@ path = "src/bin/puppeteer.rs"
 name = "puppeteer-script"
 path = "src/bin/puppeteer_script.rs"
 
+[[bin]]
+name = "p"
+path = "src/bin/p.rs"
+
 [features]
 default = ["offline"]
 fetch = ["ureq", "directories", "zip", "walkdir"]

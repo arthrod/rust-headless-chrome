@@ -143,6 +143,7 @@ impl ExecutionContext {
                 let selector = resolve_selector(selector);
                 let el = tab.wait_for_element(&selector)?;
                 el.click()?;
+                el.call_js_fn("function() { this.value = ''; }", vec![], false)?;
                 tab.type_str(text)?;
                 if self.verbose {
                     Ok(Some(format!("Filled '{selector}' with: {text}")))
@@ -338,7 +339,8 @@ impl ExecutionContext {
                 let tab = self.tab()?;
                 let js = "window.history.back()";
                 tab.evaluate(js, false)?;
-                std::thread::sleep(std::time::Duration::from_millis(500));
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let _ = tab.wait_until_navigated();
                 if self.verbose {
                     Ok(Some("Navigated back.".to_string()))
                 } else {
@@ -350,7 +352,8 @@ impl ExecutionContext {
                 let tab = self.tab()?;
                 let js = "window.history.forward()";
                 tab.evaluate(js, false)?;
-                std::thread::sleep(std::time::Duration::from_millis(500));
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let _ = tab.wait_until_navigated();
                 if self.verbose {
                     Ok(Some("Navigated forward.".to_string()))
                 } else {
@@ -370,9 +373,14 @@ impl ExecutionContext {
 
             Command::PageSetCookie { cookies_json } => {
                 let tab = self.tab()?;
-                // Parse the cookies JSON
+                // Parse the cookies JSON — avoid double-wrapping if already an array
+                let json_str = if cookies_json.trim_start().starts_with('[') {
+                    cookies_json.clone()
+                } else {
+                    format!("[{cookies_json}]")
+                };
                 let cookies: Vec<headless_chrome::protocol::cdp::Network::CookieParam> =
-                    serde_json::from_str(&format!("[{cookies_json}]"))
+                    serde_json::from_str(&json_str)
                         .map_err(|e| anyhow!("Invalid cookie JSON: {e}"))?;
                 tab.set_cookies(cookies)?;
                 Ok(Some("Cookies set.".to_string()))

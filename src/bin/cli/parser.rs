@@ -356,16 +356,6 @@ fn parse_command(line: &str, assign_to: Option<String>) -> Result<Command, Strin
         return Ok(cmd);
     }
 
-    // If line looks like a variable?.method chain, try to interpret it
-    // For now, also support direct variable access for console.log with format strings
-    // console.log('The title is "%s".', fullTitle);
-    if line.starts_with("console.log(") {
-        let inner = &line["console.log(".len()..line.len() - 1];
-        return Ok(Command::ConsoleLog {
-            expression: inner.to_string(),
-        });
-    }
-
     Err(format!("Unknown command: {line}"))
 }
 
@@ -455,7 +445,8 @@ fn extract_string_from(s: &str, end: usize) -> Option<String> {
     Some(s[1..end - 1].to_string())
 }
 
-/// Extract a single string argument from something like `'hello'` or `"hello"`
+/// Extract a single string argument from something like `'hello'` or `"hello"`.
+/// Handles escaped quotes (e.g., `'it\'s'`).
 fn extract_string_arg(args: &str) -> Result<String, String> {
     let args = args.trim();
     if args.is_empty() {
@@ -467,20 +458,19 @@ fn extract_string_arg(args: &str) -> Result<String, String> {
         return Err(format!("Expected string argument, got: {args}"));
     }
 
-    let end = args[1..]
-        .find(quote)
+    let end = find_string_arg_end(args)
         .ok_or_else(|| format!("Unterminated string: {args}"))?;
 
-    Ok(args[1..end + 1].to_string())
+    Ok(args[1..end - 1].to_string())
 }
 
 /// Extract two string arguments: ('arg1', 'arg2')
 fn extract_two_string_args(args: &str) -> Result<(String, String), String> {
     let args = args.trim();
     let first = extract_string_arg(args)?;
-    // Find the comma after the first string
-    let quote = args.chars().next().unwrap();
-    let after_first = args[1..].find(quote).unwrap() + 2; // skip past closing quote
+    // Use escape-aware end finding to skip past the first string
+    let after_first = find_string_arg_end(args)
+        .ok_or_else(|| format!("Unterminated string: {args}"))?;
     let rest = args[after_first..].trim();
     let rest = rest.strip_prefix(',').ok_or("Expected comma between arguments")?;
     let second = extract_string_arg(rest.trim())?;

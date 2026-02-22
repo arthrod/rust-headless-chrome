@@ -186,7 +186,7 @@ fn create_browser(args: &Args, cfg: &Config) -> Result<Browser> {
     let devtools = cfg.devtools.unwrap_or(false);
     let enable_gpu = cfg.enable_gpu.unwrap_or(false);
     let enable_logging = cfg.enable_logging.unwrap_or(false);
-    let ignore_certificate_errors = cfg.ignore_certificate_errors.unwrap_or(true);
+    let ignore_certificate_errors = cfg.ignore_certificate_errors.unwrap_or(false);
     let disable_default_args = cfg.disable_default_args.unwrap_or(false);
     let idle_browser_timeout = std::time::Duration::from_secs(
         cfg.idle_browser_timeout_secs.unwrap_or(30),
@@ -287,18 +287,14 @@ fn run_repl(ctx: &mut ExecutionContext) -> Result<()> {
 
                 match parser::parse_line(&line) {
                     Ok(cmd) => {
-                        if matches!(cmd, parser::Command::BrowserClose) {
-                            match ctx.execute(&cmd) {
-                                Ok(Some(output)) => println!("{output}"),
-                                Ok(None) => {}
-                                Err(e) => eprintln!("Error: {e}"),
-                            }
-                            break;
-                        }
+                        let is_close = matches!(cmd, parser::Command::BrowserClose);
                         match ctx.execute(&cmd) {
                             Ok(Some(output)) => println!("{output}"),
                             Ok(None) => {}
                             Err(e) => eprintln!("Error: {e}"),
+                        }
+                        if is_close {
+                            break;
                         }
                     }
                     Err(e) => eprintln!("Parse error: {e}"),

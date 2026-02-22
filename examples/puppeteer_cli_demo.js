@@ -15,7 +15,7 @@ await page.setViewport({width: 1080, height: 1024});
 await page.screenshot({path: 'chrome_dev.png'});
 
 // Print the page title
-const title = page.title();
+const title = await page.title();
 console.log('Page title: %s', title);
 
 // Close the browser

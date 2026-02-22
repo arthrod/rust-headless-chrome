@@ -139,14 +139,12 @@ fn main() -> Result<()> {
                     Ok(Some(output)) => println!("{output}"),
                     Ok(None) => {}
                     Err(e) => {
-                        eprintln!("Error at line {}: {e}", i + 1);
-                        std::process::exit(1);
+                        return Err(anyhow::anyhow!("Error at line {}: {e}", i + 1));
                     }
                 }
             }
             Err(e) => {
-                eprintln!("Parse error at line {}: {e}", i + 1);
-                std::process::exit(1);
+                return Err(anyhow::anyhow!("Parse error at line {}: {e}", i + 1));
             }
         }
     }

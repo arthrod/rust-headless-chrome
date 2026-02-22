@@ -186,18 +186,14 @@ fn run_repl(ctx: &mut ExecutionContext) -> Result<()> {
 
                 match parser::parse_line(&line) {
                     Ok(cmd) => {
-                        if matches!(cmd, parser::Command::BrowserClose) {
-                            match ctx.execute(&cmd) {
-                                Ok(Some(output)) => println!("{output}"),
-                                Ok(None) => {}
-                                Err(e) => eprintln!("Error: {e}"),
-                            }
-                            break;
-                        }
+                        let is_close = matches!(cmd, parser::Command::BrowserClose);
                         match ctx.execute(&cmd) {
                             Ok(Some(output)) => println!("{output}"),
                             Ok(None) => {}
                             Err(e) => eprintln!("Error: {e}"),
+                        }
+                        if is_close {
+                            break;
                         }
                     }
                     Err(e) => eprintln!("Parse error: {e}"),

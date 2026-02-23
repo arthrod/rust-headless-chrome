@@ -78,7 +78,7 @@ struct Config {
 )]
 struct Args {
     /// Run browser in headful (visible) mode
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true")]
     headful: Option<bool>,
 
     /// Port number for Chrome debugging protocol
@@ -98,7 +98,7 @@ struct Args {
     height: Option<u32>,
 
     /// Verbose output
-    #[arg(short, long)]
+    #[arg(short, long, num_args = 0..=1, default_missing_value = "true")]
     verbose: Option<bool>,
 
     /// Execute a single command and exit
@@ -116,6 +116,7 @@ struct Args {
 
 fn config_path() -> Option<PathBuf> {
     std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
         .ok()
         .map(|home| PathBuf::from(home).join(".cargo").join("p.json"))
 }
@@ -322,7 +323,9 @@ fn run_repl(ctx: &mut ExecutionContext) -> Result<()> {
 }
 
 fn dirs_home() -> Option<String> {
-    std::env::var("HOME").ok()
+    std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .ok()
 }
 
 fn print_config() {

@@ -225,7 +225,9 @@ fn dirs_history_path() -> Option<String> {
 }
 
 fn dirs_home() -> Option<String> {
-    std::env::var("HOME").ok()
+    std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .ok()
 }
 
 fn print_help() {

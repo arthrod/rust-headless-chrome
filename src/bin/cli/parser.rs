@@ -408,9 +408,9 @@ fn parse_locator_chain(line: &str) -> Option<(String, &str)> {
     // The selector is a string arg, so find its end
     let selector_end = find_string_arg_end(rest)?;
     let selector = extract_string_from(rest, selector_end)?;
-    let remaining = &rest[selector_end..];
-    // remaining should start with )
+    let remaining = rest[selector_end..].trim_start();
     let remaining = remaining.strip_prefix(')')?;
+    let remaining = remaining.trim_start();
     Some((selector, remaining))
 }
 
